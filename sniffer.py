@@ -11,14 +11,22 @@ IPV6_CODE = "86dd"
 
 #IP Protocol Types
 IP_ICMP_CODE = "01"
+IP_TCP_CODE = "06"
+IP_UDP_CODE = "11" #código 17
 
-# Montagem de máscara https://docs.python.org/2/library/struct.html
+# Montagem de máscara, mais informações: https://docs.python.org/2/library/struct.html
 ETH_UNPACK = '!6s6s2s'
 ARP_UNPACK = '2s2s1s1s2s6s4s6s4s'
 IPV4_UNPACK = '1s1s2s2s2s1s1s2s4s4s'
 
+UDP_UNPACK = '!HH2s2s'
+TCP_UNPACK = '!HHLLH'
 
-TCP_UNPACK = '!HHLLBBHHH'
+HTTP_UNPACK = '273s25s24s13s37s119s247s38s54s2s'
+
+HTTP_PORT = 80
+DNS_PORT = 53
+HTTPS_PORT = 443
 
 
 class Sniffer(Thread):
@@ -57,11 +65,34 @@ class Sniffer(Thread):
                 if protocol == IP_ICMP_CODE: 
                     icmp_type = binascii.hexlify(headers[34])
                     self.metrics.addIcmpPacket(icmp_type)
-                #elif protocol == IP_TCP_CODE: #TCP
+
+                elif protocol == IP_TCP_CODE: #TCP
+                    tcp_header = struct.unpack(TCP_UNPACK, headers[34:48])
+                    self.metrics.addTcpPort(tcp_header[1])
+
+                    if tcp_header[1] == HTTP_PORT:
+                        self.metrics.addHttpPacket()
+
+                    if tcp_header[1] == HTTPS_PORT:
+                        self.metrics.addHttpsPacket()
+
+                elif protocol == IP_UDP_CODE: #UDP
+                    udp_header = struct.unpack(UDP_UNPACK, headers[34:42])
+                    udp_dest_port = udp_header[1]
+                    udp_src_port = udp_header[0]
+                    self.metrics.addUdpPort(udp_dest_port)
+
+                    if udp_src_port == DNS_PORT or udp_dest_port == DNS_PORT:
+                        self.metrics.addDnsPacket()
+
 
     def exit(self):
-        self.metrics.printDataLink()
-        self.metrics.printNetwork()
-        self.stop_event.set()
+        try:
+            self.metrics.printDataLink()
+            self.metrics.printNetwork()
+            self.metrics.printTransport()
+            self.metrics.printApplication()
+        finally:
+            self.stop_event.set()
 
 
