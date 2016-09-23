@@ -20,7 +20,7 @@ ARP_UNPACK = '2s2s1s1s2s6s4s6s4s'
 IPV4_UNPACK = '!1s1sH2s2s1s1s2s4s4s'
 
 UDP_UNPACK = '!HH2s2s'
-TCP_UNPACK = '!HHLL'
+TCP_UNPACK = '!HHLL1s1s'
 
 HTTP_UNPACK = '273s25s24s13s37s119s247s38s54s2s'
 
@@ -72,8 +72,11 @@ class Sniffer(Thread):
                     self.metrics.addIcmpPacket(icmp_type)
 
                 elif protocol == IP_TCP_CODE: #TCP
-                    tcp_header = struct.unpack(TCP_UNPACK, headers[34:46])
+                    tcp_header = struct.unpack(TCP_UNPACK, headers[34:48])
                     self.metrics.addTcpPort(tcp_header[1])
+                    tcp_flags = tcp_header[5]
+                    if binascii.hexlify(tcp_flags) == "10":
+                        self.metrics.addTcpConnection()
 
                     if tcp_header[1] == HTTP_PORT:
                         self.metrics.addHttpPacket()

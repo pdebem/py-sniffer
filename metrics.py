@@ -21,6 +21,7 @@ class Metrics:
         self.icmp = 0
         self.ips = []
         self.tcp = 0
+        self.openTcp = 0
         self.tcpPorts = []
         self.udp = 0
         self.udpPorts = []
@@ -32,6 +33,11 @@ class Metrics:
         self.packetSizes = [] #tamanho dos pacotes trafegados
 
 
+    # Registra tcp aberto
+    def addTcpConnection(self):
+        self.openTcp = self.openTcp + 1
+
+
     # Adiciona pacote SSH - Aplicaçao
     def addSSHPacket(self):
         self.ssh = self.ssh + 1
@@ -39,11 +45,13 @@ class Metrics:
 
     # Imprime informações gerais
     def printGeneralInfo(self):
-        greater = max(self.packetSizes)
-        smaller = min(self.packetSizes)
         if len(self.packetSizes) == 0:
+            greater = 0
+            smaller = 0
             mean = 0
         else:
+            greater = max(self.packetSizes)
+            smaller = min(self.packetSizes)
             mean = sum(self.packetSizes) / len(self.packetSizes)
 
         print("================================")
@@ -171,6 +179,7 @@ class Metrics:
         print("-------- TRANSPORTE ------------")
         print("================================")
         print("Qtd TCP: {} - {}%".format(self.tcp, percentTcp))
+        print("Conexões TCPs abertas: {}".format(self.openTcp))
         print("Qtd UDP: {} - {}%".format(self.udp, percentUdp))
         print("5 Portas TCPs mais acessadas:")
         for tcp_record in mostCommonTcpPorts:
