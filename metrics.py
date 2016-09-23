@@ -28,7 +28,13 @@ class Metrics:
         self.dns = 0
         self.http = 0
         self.https = 0
+        self.packetSizes = [] #tamanho dos pacotes trafegados
         
+
+    # Registra o tamanho dos pacotes
+    def addPacketLength(self, length):
+        self.packetSizes.append(length)
+
 
     #Coleta um pacote ARP
     def addArpPacket(self, opCode):
