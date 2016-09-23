@@ -203,7 +203,7 @@ class Metrics:
             percentHttp = (float(self.http) / float(appTotal))*100
             percentHttps = (float(self.https) / float(appTotal))*100
             percentDns = (float(self.dns) / float(appTotal))*100
-            percentSSH = (float(self.dns) / float(appTotal))*100
+            percentSSH = (float(self.ssh) / float(appTotal))*100
 
         print("================================")
         print("--------- APLICAÇÃO ------------")
