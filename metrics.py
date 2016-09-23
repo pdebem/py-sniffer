@@ -28,8 +28,30 @@ class Metrics:
         self.dns = 0
         self.http = 0
         self.https = 0
+        self.ssh = 0
         self.packetSizes = [] #tamanho dos pacotes trafegados
-        
+
+
+    # Adiciona pacote SSH - Aplicaçao
+    def addSSHPacket(self):
+        self.ssh = self.ssh + 1
+
+
+    # Imprime informações gerais
+    def printGeneralInfo(self):
+        greater = max(self.packetSizes)
+        smaller = min(self.packetSizes)
+        if len(self.packetSizes) == 0:
+            mean = 0
+        else:
+            mean = sum(self.packetSizes) / len(self.packetSizes)
+
+        print("================================")
+        print("-------- TRANSPORTE ------------")
+        print("================================")
+        print("Maior pacote trafegado: {}".format(greater))
+        print("Menor pacote trafegado: {}".format(smaller))
+        print("Media de tamanho trafegado: {}".format(mean))
 
     # Registra o tamanho dos pacotes
     def addPacketLength(self, length):
@@ -162,15 +184,17 @@ class Metrics:
     # Imprime métricas da camada de APLICAÇÃO
     def printApplication(self):
         mostCommonSites = Counter(self.sites).most_common()[0:5]
-        appTotal = self.http + self.dns + self.https
+        appTotal = self.http + self.dns + self.https + self.ssh
         if appTotal == 0:
             percentHttp = 0
             percentHttps = 0
             percentDns = 0
+            percentSSH = 0
         else:
             percentHttp = (float(self.http) / float(appTotal))*100
             percentHttps = (float(self.https) / float(appTotal))*100
             percentDns = (float(self.dns) / float(appTotal))*100
+            percentSSH = (float(self.dns) / float(appTotal))*100
 
         print("================================")
         print("--------- APLICAÇÃO ------------")
@@ -178,6 +202,7 @@ class Metrics:
         print("Qtd HTTP:  {} - {}%".format(self.http, percentHttp))
         print("Qtd HTTPS: {} - {}%".format(self.https, percentHttps))
         print("Qtd DNS: {} - {}%".format(self.dns, percentDns))
-        print("5 Sites mais acessados:")
-        for site_record in mostCommonSites:
-            print(" - {} - {} acessos".format(site_record[0],site_record[1]))
+        print("Qtd SSH: {} - {}%".format(self.ssh, percentSSH))
+        #print("5 Sites mais acessados:")
+        #for site_record in mostCommonSites:
+        #    print(" - {} - {} acessos".format(site_record[0],site_record[1]))

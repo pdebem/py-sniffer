@@ -24,9 +24,11 @@ TCP_UNPACK = '!HHLL'
 
 HTTP_UNPACK = '273s25s24s13s37s119s247s38s54s2s'
 
+# Protocolos de aplicação
 HTTP_PORT = 80
 DNS_PORT = 53
 HTTPS_PORT = 443
+SSH_PORT = 22
 
 
 class Sniffer(Thread):
@@ -65,7 +67,7 @@ class Sniffer(Thread):
                 self.metrics.addIp(socket.inet_ntoa(ip_header[9]))
                 protocol = binascii.hexlify(ip_header[6])
                 # Verifica dentro do pacote IP se é um ICMP
-                if protocol == IP_ICMP_CODE: 
+                if protocol == IP_ICMP_CODE:
                     icmp_type = binascii.hexlify(headers[34])
                     self.metrics.addIcmpPacket(icmp_type)
 
@@ -79,6 +81,9 @@ class Sniffer(Thread):
                     if tcp_header[1] == HTTPS_PORT:
                         self.metrics.addHttpsPacket()
 
+                    if tcp_header[1] == SSH_PORT:
+                        self.metrics.addSSHPacket()
+
                 elif protocol == IP_UDP_CODE: #UDP
                     udp_header = struct.unpack(UDP_UNPACK, headers[34:42])
                     udp_dest_port = udp_header[1]
@@ -87,11 +92,15 @@ class Sniffer(Thread):
 
                     if udp_src_port == DNS_PORT or udp_dest_port == DNS_PORT:
                         self.metrics.addDnsPacket()
+
             self.metrics.addPacketLength(packetLength)
 
 
+    # Encerra a execução da thread de sniffer
     def exit(self):
         try:
+            #Imprime as estatísticas
+            self.metrics.printGeneralInfo()
             self.metrics.printDataLink()
             self.metrics.printNetwork()
             self.metrics.printTransport()
